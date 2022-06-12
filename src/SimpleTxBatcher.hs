@@ -1,41 +1,48 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module SimpleTxBatcher
-  (main, createSimpleBatchedScript) where
+  (main, createBatchedScript) where
 
-import System.IO
-import System.Exit
-import System.Environment
-import Prelude
 import Data.List.Split (splitOn)
-import TransactionProperties
+import Data.Maybe
+import Data.Hex(hex)
+import qualified Data.Map.Strict as SMap
 import Data.Time
+import Prelude
+import Text.Printf (printf)
+import TransactionProperties
+import Types
+import System.Environment
+import System.Exit
+import System.IO
 
 main :: IO ()
 main = do
         args <- getArgs
         case args of
-          [] -> do
-                  putStrLn "No input file provided"
+          [(x:xs)] -> do
+                  createBatchedScript (x:xs)
                   exitFailure
           _ -> do
-                  createSimpleBatchedScript $ head args
+                  putStrLn "Not input args provided"
+                  exitFailure
 
-createSimpleBatchedScript :: String -> IO ()
-createSimpleBatchedScript inFile = do
-  case inFile of
+createBatchedScript :: String -> IO ()
+createBatchedScript inFilePath = do
+  case inFilePath of
     [] -> do
             putStrLn "No input file provided"
             exitFailure
     _ -> do
-            records <- parseFile inFile
-            if (length records > 50)
+            records <- tail <$> parseFile inFilePath
+            if (length records > batchLimit)
               then do
-                putStrLn "More than 50 records in csv"
+                putStrLn $ printf "More than %s records in csv" (show batchLimit)
                 exitFailure
               else do
                 let combinedTxOutSegments = buildTxOutSegmentFromRecords records
-                writeToOutFiles txInCsv combinedTxOutSegments
+                let changeTxOutSegment = foldr (++) [] $ buildBalanceTokenSegmentFromRecords records
+                writeToOutFiles txInCsv (combinedTxOutSegments ++ changeTxOutSegment)
 
 parseFile :: String -> IO [String]
 parseFile f =
@@ -44,52 +51,71 @@ parseFile f =
     return $ lines fileContent
 
 beforeTxInSegment :: String
-beforeTxInSegment = "cardano-cli transaction build \\\n--alonzo-era \\\n--testnet-magic $TESTNET_MAGIC \\\n"
+beforeTxInSegment = "cardano-cli transaction build \\\n--alonzo-era \\\n" ++ networkPart ++ " \\\n"
 
 txInSegment :: String -> String
 txInSegment txIn = "--tx-in " ++ txIn ++ " \\\n" --txHash0#$txIx0
 
 txOutSegment :: String -> String
 txOutSegment rec =
- "--tx-out " ++ (fst addrAmtPair) ++ "+" ++ (show minAssetLovelace) ++ "+" ++ "\"" ++(snd addrAmtPair) ++ " " ++ tokenPolicyId ++ "." ++ tokenName ++ "\"" ++ " \\\n"
+  "--tx-out " ++ (cols!!1) ++ "+" ++ (show minUtxoLovelace) ++ "+" ++ "\"" ++(cols!!4) ++ " " ++ cols!!2 ++ "." ++ hex (cols!!3) ++ "\"" ++ " \\\n"
  where
-   addrAmtPair = tuplifyLastFrom3 $ splitOn "," rec
+   cols = split rec
 
-balancingTxOutSegment :: String -> String
-balancingTxOutSegment rec =
- "--tx-out " ++ (fst addrAmtPair) ++ "+" ++ (show minAssetLovelace) ++ "+" ++ "\"" ++(snd addrAmtPair) ++ " " ++ tokenPolicyId ++ "." ++ tokenName ++ "\"" ++ " \\\n"
- where
-   addrAmtPair = tuplifyLastFrom3 $ splitOn "," rec
+changeTxOutSegment :: AssetTotal -> Int -> String
+changeTxOutSegment at used =
+  "--tx-out " ++ storageAddress ++ "+" ++ (show minUtxoLovelace) ++ "+" ++ "\"" ++ (show $ (total at) - used) ++ " " ++ (policyId $ assetClass at) ++ "." ++ hex (assetName $ assetClass at) ++ "\"" ++ " \\\n"
 
-tuplifyLastFrom3 :: [String] -> (String,String)
-tuplifyLastFrom3 [x,y,z] = (y,z)
+split :: String -> [String]
+split rec = splitOn "," rec
 
-afterTxOutSegment :: String
-afterTxOutSegment = "--change-address "++ storageAddress ++ " \\\n--out-file submit-transfer-tx.raw"
+carryAllChangeTxOutSegment :: String
+carryAllChangeTxOutSegment = "--change-address "++ storageAddress ++ " \\\n--out-file cli-batch-tx.raw"
+
+buildTxInSegments :: String
+buildTxInSegments = foldl (++) [] $ map txInSegment $ split txInCsv
 
 buildTxOutSegmentFromRecords :: [String] -> String
-buildTxOutSegmentFromRecords l = foldl (++) [] $ map txOutSegment l
+buildTxOutSegmentFromRecords recs = foldl (++) [] $ map txOutSegment recs
 
-buildBalancingTxOutChangeSegmentFromRecords :: [String] -> String
-buildBalancingTxOutChangeSegmentFromRecords l = foldl (++) [] $ map txOutSegment l
+buildBalanceTokenSegmentFromRecords :: [String] -> [String]
+buildBalanceTokenSegmentFromRecords recs = do
+  let assetList = map (\r -> (AssetClass (r!!2) (r!!3), (read (r!!4) :: Int))) $ map split recs
+      combinedList = SMap.toList $ SMap.fromListWith (+) assetList
+      totalMap = SMap.fromList $ map (\e -> (AssetClass (e!!0) (e!!1), read (e!!2)::Int)) $ map split assetInfo
+      in
+        map (\e -> changeTxOutSegment
+                     (AssetTotal { assetClass = fst e
+                                 , total = fromJust $ SMap.lookup (fst e) totalMap
+                                 }
+                     )
+                     (snd e)
+            ) combinedList
 
 writeToOutFiles :: String -> String -> IO ()
 writeToOutFiles txIn [] = return ()
 writeToOutFiles txIn x =
   do
    timeStr <- fmap show getCurrentTime
-   outh <- openFile ("create-and-sign-cli-tx-" ++ (timeStr) ++ ".txt") WriteMode
+   outh <- openFile ("runtime/" ++ targetFileName) WriteMode
+   hPutStrLn outh "#!/usr/bin/env bash\n"
    hPutStrLn outh $ buildRawTxCommand txIn x
-   hPutStrLn outh "\n\n"
+   hPutStrLn outh "\n"
 
    hPutStrLn outh $ buildSignTxCommand
    hClose outh
 
 
 buildRawTxCommand :: String -> String -> String
-buildRawTxCommand txIn longTxOut = beforeTxInSegment ++ (txInSegment txIn) ++ longTxOut ++ afterTxOutSegment
+buildRawTxCommand txIn longTxOut = beforeTxInSegment
+                                   ++ buildTxInSegments
+                                   ++ longTxOut
+                                   ++ carryAllChangeTxOutSegment
 
 buildSignTxCommand :: String
-buildSignTxCommand = "cardano-cli transaction sign  \\\n --signing-key-file sw-signing-key.skey  \\\n --testnet-magic $TESTNET_MAGIC \\\n --tx-body-file submit-transfer-tx.raw  \\\n --out-file submit-transfer-tx.signed"
+buildSignTxCommand = "cardano-cli transaction sign  \\\n --signing-key-file signing-key.skey  \\\n"  ++ networkPart ++ " \\\n --tx-body-file cli-batch-tx.raw  \\\n --out-file cli-batch-tx.signed"
 
-
+networkPart :: String
+networkPart = case cardanoNetwork of
+                "mainnet" -> "--mainnet"
+                "testnet" -> "--testnet-magic $TESTNET_MAGIC"

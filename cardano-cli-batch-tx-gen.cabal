@@ -26,15 +26,22 @@ library
     build-depends:
      base >= 4.9,
      split >= 0.2,
-     time >= 1.9
+     time >= 1.9,
+     MissingH,
+     hex,
+     containers
 
-executable rtd
+executable simple-tx-batcher
     import: lang
     main-is: SimpleTxBatcher.hs
+    ghc-options: -main-is SimpleTxBatcher
     hs-source-dirs: src
     other-modules:
          TransactionProperties
     build-depends:
      base >= 4.9,
      split >= 0.2,
-     time >= 1.9
+     time >= 1.9,
+     MissingH,
+     hex,
+     containers
