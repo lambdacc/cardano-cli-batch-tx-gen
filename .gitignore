@@ -1,2 +1,5 @@
 /sample-minting/
 /notes/
+/runtime/batched-tx.sh
+/runtime/cli-batch-tx.raw
+/runtime/cli-batch-tx.signed

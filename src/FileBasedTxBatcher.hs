@@ -1,16 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module SimpleTxBatcher
+module FileBasedTxBatcher
   (main, createBatchedScript) where
 
 import Data.List.Split (splitOn)
 import Data.Maybe
 import Data.Hex(hex)
 import qualified Data.Map.Strict as SMap
-import Data.Time
 import Prelude
 import Text.Printf (printf)
-import TransactionProperties
+import Properties
 import Types
 import System.Environment
 import System.Exit
@@ -41,8 +40,8 @@ createBatchedScript inFilePath = do
                 exitFailure
               else do
                 let combinedTxOutSegments = buildTxOutSegmentFromRecords records
-                let changeTxOutSegment = foldr (++) [] $ buildBalanceTokenSegmentFromRecords records
-                writeToOutFiles txInCsv (combinedTxOutSegments ++ changeTxOutSegment)
+                let changeTxOutSegments = foldr (++) [] $ buildBalanceTokenSegmentFromRecords records
+                writeToOutFiles (combinedTxOutSegments ++ changeTxOutSegments)
 
 parseFile :: String -> IO [String]
 parseFile f =
@@ -73,7 +72,7 @@ carryAllChangeTxOutSegment :: String
 carryAllChangeTxOutSegment = "--change-address "++ storageAddress ++ " \\\n--out-file cli-batch-tx.raw"
 
 buildTxInSegments :: String
-buildTxInSegments = foldl (++) [] $ map txInSegment $ split txInCsv
+buildTxInSegments = foldl (++) [] $ map txInSegment $ txInList
 
 buildTxOutSegmentFromRecords :: [String] -> String
 buildTxOutSegmentFromRecords recs = foldl (++) [] $ map txOutSegment recs
@@ -92,14 +91,13 @@ buildBalanceTokenSegmentFromRecords recs = do
                      (snd e)
             ) combinedList
 
-writeToOutFiles :: String -> String -> IO ()
-writeToOutFiles txIn [] = return ()
-writeToOutFiles txIn x =
+writeToOutFiles :: String -> IO ()
+writeToOutFiles [] = return ()
+writeToOutFiles x =
   do
-   timeStr <- fmap show getCurrentTime
    outh <- openFile ("runtime/" ++ targetFileName) WriteMode
    hPutStrLn outh "#!/usr/bin/env bash\n"
-   hPutStrLn outh $ buildRawTxCommand txIn x
+   hPutStrLn outh $ buildRawTxCommand x
    hPutStrLn outh "\n"
 
    hPutStrLn outh $ buildSignTxCommand
@@ -109,19 +107,20 @@ writeToOutFiles txIn x =
    hClose outh
 
 
-buildRawTxCommand :: String -> String -> String
-buildRawTxCommand txIn longTxOut = beforeTxInSegment
+buildRawTxCommand :: String -> String
+buildRawTxCommand longTxOut = beforeTxInSegment
                                    ++ buildTxInSegments
                                    ++ longTxOut
                                    ++ carryAllChangeTxOutSegment
 
 buildSignTxCommand :: String
-buildSignTxCommand = "cardano-cli transaction sign  \\\n --signing-key-file signing-key.skey  \\\n"  ++ networkPart ++ " \\\n --tx-body-file cli-batch-tx.raw  \\\n --out-file cli-batch-tx.signed"
+buildSignTxCommand = "cardano-cli transaction sign  \\\n --signing-key-file signing-key.skey  \\\n "  ++ networkPart ++ " \\\n --tx-body-file cli-batch-tx.raw  \\\n --out-file cli-batch-tx.signed"
 
 buildSubmitTxCommand :: String
 buildSubmitTxCommand = "cardano-cli transaction submit --tx-file cli-batch-tx.signed " ++ networkPart
 
 networkPart :: String
-networkPart = case cardanoNetwork of
-                "mainnet" -> "--mainnet"
-                "testnet" -> "--testnet-magic $TESTNET_MAGIC"
+networkPart
+  | cardanoNetwork  == "mainnet" = "--mainnet"
+  | cardanoNetwork  == "testnet" = "--testnet-magic $TESTNET_MAGIC"
+  | otherwise = "--testnet-magic $TESTNET_MAGIC"

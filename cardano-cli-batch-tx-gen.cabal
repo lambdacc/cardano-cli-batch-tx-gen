@@ -12,6 +12,7 @@ common lang
       -Wall -Wnoncanonical-monad-instances
       -Wincomplete-uni-patterns -Wincomplete-record-updates
       -Wredundant-constraints -Widentities -rtsopts
+      -Wno-missing-signatures
       -- See Plutus Tx readme
       -fobject-code -fno-ignore-interface-pragmas -fno-omit-interface-pragmas
 
@@ -19,10 +20,11 @@ common lang
 library
     import: lang
     hs-source-dirs: src
-    main-is: src/SimpleTxBatcher.hs
+    main-is: src/FileBasedTxBatcher.hs
     exposed-modules:
-     SimpleTxBatcher,
-     TransactionProperties
+     FileBasedTxBatcher,
+     Properties,
+     Types
     build-depends:
      base >= 4.9,
      split >= 0.2,
@@ -33,11 +35,12 @@ library
 
 executable simple-tx-batcher
     import: lang
-    main-is: SimpleTxBatcher.hs
-    ghc-options: -main-is SimpleTxBatcher
+    main-is: FileBasedTxBatcher.hs
+    ghc-options: -main-is FileBasedTxBatcher
     hs-source-dirs: src
     other-modules:
-         TransactionProperties
+     Properties,
+     Types
     build-depends:
      base >= 4.9,
      split >= 0.2,
