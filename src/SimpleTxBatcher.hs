@@ -103,6 +103,9 @@ writeToOutFiles txIn x =
    hPutStrLn outh "\n"
 
    hPutStrLn outh $ buildSignTxCommand
+   hPutStrLn outh "\n"
+
+   hPutStrLn outh $ buildSubmitTxCommand
    hClose outh
 
 
@@ -114,6 +117,9 @@ buildRawTxCommand txIn longTxOut = beforeTxInSegment
 
 buildSignTxCommand :: String
 buildSignTxCommand = "cardano-cli transaction sign  \\\n --signing-key-file signing-key.skey  \\\n"  ++ networkPart ++ " \\\n --tx-body-file cli-batch-tx.raw  \\\n --out-file cli-batch-tx.signed"
+
+buildSubmitTxCommand :: String
+buildSubmitTxCommand = "cardano-cli transaction submit --tx-file cli-batch-tx.signed " ++ networkPart
 
 networkPart :: String
 networkPart = case cardanoNetwork of

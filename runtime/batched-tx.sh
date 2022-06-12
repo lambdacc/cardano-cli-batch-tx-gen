@@ -3,10 +3,9 @@
 cardano-cli transaction build \
 --alonzo-era \
 --testnet-magic $TESTNET_MAGIC \
---tx-in 552b987b0ea562ecfc3474394fcfac5fded2c296df0597ff7f4bc91d61b0fca8#1 \
---tx-in 983d81f4b9c36d82707310b434d15c4c801f404e3c2ca9ed4f9f10266135f4c4#1 \
 --tx-in d44e1a25223891739ae138c1d16465ffac4cfd2e51dea84922ea5a159de36a4b#1 \
 --tx-in f2fe6f3d4e226bef7aae18560adf97b100170f12b216077d5fc3cccf4a57b293#1 \
+--tx-in e47e22d8fbd94ecd783e04b420eb68728d4045cd9a0eb7eba7ac9a1373454fa1#1 \
 --tx-out addr_test1vrxkun86q239q4es22zzgs3f3f7tqmaaq44qxlvdprz6njcyazjh0+1700000+"85 129ad21322dc33d4c9daa1002b0d92ca5d8da22d84977c7d7970165a.506170617961546F6B656E" \
 --tx-out addr_test1vrzfxcextsrqcuaer2xvzarxf9eydstwrg9hmvczzdjt97cclzews+1700000+"80 cf91095d40729f784dcfe0ab63480f53f5762ea233120de7ad7da0b8.4D616E676F546F6B656E" \
 --tx-out addr_test1vqnys5jwexrak4llm73nczf7yvrwc29hlj3rfptpkfrdv7g7l6v8x+1700000+"37 129ad21322dc33d4c9daa1002b0d92ca5d8da22d84977c7d7970165a.506170617961546F6B656E" \
@@ -37,9 +36,9 @@ cardano-cli transaction build \
 --tx-out addr_test1vp7crzty8zf8lpxj5k74gjr5yfee35ygyah8a8aktx0zf5gm5ukae+1700000+"25 cf91095d40729f784dcfe0ab63480f53f5762ea233120de7ad7da0b8.4D616E676F546F6B656E" \
 --tx-out addr_test1vp6z7847eyq06c08rk7m7zr582hpd25h8nypt659slufe7greyw4a+1700000+"55 129ad21322dc33d4c9daa1002b0d92ca5d8da22d84977c7d7970165a.506170617961546F6B656E" \
 --tx-out addr_test1vqqfd859tx3hj23rqe4pndkccscyq75sv9rqzqd4wrg5fwqmhyyly+1700000+"11 cf91095d40729f784dcfe0ab63480f53f5762ea233120de7ad7da0b8.4D616E676F546F6B656E" \
---tx-out addr_test1vqag660kju34mre6guadzqr30q22gtqkp4k860npku95xusrwnnkd+1700000+"999171 129ad21322dc33d4c9daa1002b0d92ca5d8da22d84977c7d7970165a.506170617961546F6B656E" \
---tx-out addr_test1vqag660kju34mre6guadzqr30q22gtqkp4k860npku95xusrwnnkd+1700000+"999164 cf91095d40729f784dcfe0ab63480f53f5762ea233120de7ad7da0b8.4D616E676F546F6B656E" \
---change-address addr_test1vqag660kju34mre6guadzqr30q22gtqkp4k860npku95xusrwnnkd \
+--tx-out addr_test1vrw8rs5ax3fc88uf0zrtpjj029crhtzwj6y27paqcfledjg4xw3h9+1700000+"999171 129ad21322dc33d4c9daa1002b0d92ca5d8da22d84977c7d7970165a.506170617961546F6B656E" \
+--tx-out addr_test1vrw8rs5ax3fc88uf0zrtpjj029crhtzwj6y27paqcfledjg4xw3h9+1700000+"999164 cf91095d40729f784dcfe0ab63480f53f5762ea233120de7ad7da0b8.4D616E676F546F6B656E" \
+--change-address addr_test1vrw8rs5ax3fc88uf0zrtpjj029crhtzwj6y27paqcfledjg4xw3h9 \
 --out-file cli-batch-tx.raw
 
 
@@ -48,3 +47,6 @@ cardano-cli transaction sign  \
 --testnet-magic $TESTNET_MAGIC \
  --tx-body-file cli-batch-tx.raw  \
  --out-file cli-batch-tx.signed
+
+
+cardano-cli transaction submit --tx-file cli-batch-tx.signed --testnet-magic $TESTNET_MAGIC
