@@ -1,0 +1,50 @@
+cabal-version:      3.6
+name:               cardano-cli-batch-tx-gen
+version:            0.1.0.0
+synopsis:           A batch tx generator for cardano-cli
+
+author:             lambdac
+maintainer:         lambdac
+
+common lang
+    default-language:   Haskell2010
+    ghc-options:
+      -Wall -Wnoncanonical-monad-instances
+      -Wincomplete-uni-patterns -Wincomplete-record-updates
+      -Wredundant-constraints -Widentities -rtsopts
+      -Wno-missing-signatures
+      -- See Plutus Tx readme
+      -fobject-code -fno-ignore-interface-pragmas -fno-omit-interface-pragmas
+
+
+library
+    import: lang
+    hs-source-dirs: src
+    main-is: src/FileBasedTxBatcher.hs
+    exposed-modules:
+     FileBasedTxBatcher,
+     Properties,
+     Types
+    build-depends:
+     base >= 4.9,
+     split >= 0.2,
+     time >= 1.9,
+     MissingH,
+     hex,
+     containers
+
+executable simple-tx-batcher
+    import: lang
+    main-is: FileBasedTxBatcher.hs
+    ghc-options: -main-is FileBasedTxBatcher
+    hs-source-dirs: src
+    other-modules:
+     Properties,
+     Types
+    build-depends:
+     base >= 4.9,
+     split >= 0.2,
+     time >= 1.9,
+     MissingH,
+     hex,
+     containers
