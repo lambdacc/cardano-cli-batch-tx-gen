@@ -33,7 +33,23 @@ library
      hex,
      containers
 
-executable simple-tx-batcher
+executable simple-tx-batcher-file
+    import: lang
+    main-is: FileBasedTxBatcher.hs
+    ghc-options: -main-is FileBasedTxBatcher
+    hs-source-dirs: src
+    other-modules:
+     Properties,
+     Types
+    build-depends:
+     base >= 4.9,
+     split >= 0.2,
+     time >= 1.9,
+     MissingH,
+     hex,
+     containers
+
+executable simple-tx-batcher-api
     import: lang
     main-is: FileBasedTxBatcher.hs
     ghc-options: -main-is FileBasedTxBatcher
