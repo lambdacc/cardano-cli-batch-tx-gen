@@ -5,7 +5,9 @@ Batching transactions is a pertinent use case as it has a direct impact on trans
 
 ### How it works:
 The transaction generator (haskell component) will receive data from the data source integration service about receiving addresses as well as the native assets and their amounts that need to be transferred.
-The generator will read the configuration properties and generate commands that create a batched transaction, signs and submits it to the Cardano blockchain.  The configuration among other parameters will include the signing keys for the address/wallet being used with the CLI. 
+The generator will read the configuration properties and generate commands which will 
+`create a batched transaction ->  sign it with given signing key -> and submit it to the Cardano blockchain.`
+The configuration among other parameters will include the signing keys for the address/wallet being used with the CLI. 
 Simple shell scripts are used to orchestrate the various steps that need to occur sequentially.
 
 ![Batched-tx-generator-c8d883](https://user-images.githubusercontent.com/5955141/174313084-356d6907-24cb-44f7-a7fb-ef3133dff61b.jpg)
