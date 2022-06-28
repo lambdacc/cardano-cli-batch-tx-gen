@@ -23,17 +23,21 @@ library
     main-is: src/FileBasedTxBatcher.hs
     exposed-modules:
      FileBasedTxBatcher,
+     APIBasedTxBatcher,
      Properties,
      Types
     build-depends:
+     aeson,
      base >= 4.9,
-     split >= 0.2,
-     time >= 1.9,
+     bytestring,
+     containers,
      MissingH,
      hex,
-     containers
+     http-conduit,
+     split >= 0.2,
+     time >= 1.9
 
-executable simple-tx-batcher-file
+executable file-tx-batcher
     import: lang
     main-is: FileBasedTxBatcher.hs
     ghc-options: -main-is FileBasedTxBatcher
@@ -42,25 +46,31 @@ executable simple-tx-batcher-file
      Properties,
      Types
     build-depends:
+     aeson,
      base >= 4.9,
-     split >= 0.2,
-     time >= 1.9,
+     bytestring,
+     containers,
      MissingH,
      hex,
-     containers
+     http-conduit,
+     split >= 0.2,
+     time >= 1.9
 
-executable simple-tx-batcher-api
+executable api-tx-batcher
     import: lang
-    main-is: FileBasedTxBatcher.hs
-    ghc-options: -main-is FileBasedTxBatcher
+    main-is: APIBasedTxBatcher.hs
+    ghc-options: -main-is APIBasedTxBatcher
     hs-source-dirs: src
     other-modules:
      Properties,
      Types
     build-depends:
+     aeson,
      base >= 4.9,
-     split >= 0.2,
-     time >= 1.9,
+     bytestring,
+     containers,
      MissingH,
      hex,
-     containers
+     http-conduit,
+     split >= 0.2,
+     time >= 1.9
