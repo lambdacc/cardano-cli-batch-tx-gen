@@ -10,7 +10,8 @@ The generator will read the configuration properties and generate commands which
 The configuration among other parameters will include the signing keys for the address/wallet being used with the CLI. 
 Simple shell scripts are used to orchestrate the various steps that need to occur sequentially.
 
-![Batched-tx-generator-c8d883](https://user-images.githubusercontent.com/5955141/174313084-356d6907-24cb-44f7-a7fb-ef3133dff61b.jpg)
+![cli batch tx diag ](https://user-images.githubusercontent.com/5955141/176225197-c2cb7e26-5cdc-467e-a348-2fb0fb1aee3d.jpg)
+
 
 
 **An example:**
