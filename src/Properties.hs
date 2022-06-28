@@ -1,9 +1,7 @@
 module Properties where
 
+{-testnet or mainnet-}
 cardanoNetwork = "testnet"
-minUtxoLovelace = 1700000 :: Int
-batchLimit = 100 :: Int
-targetFileName = "batched-tx.sh"
 
 {-This is the address where your tokens to be sent are stored-}
 storageAddress = "addr_test1vrw8rs5ax3fc88uf0zrtpjj029crhtzwj6y27paqcfledjg4xw3h9"
@@ -19,3 +17,6 @@ assetInfo = [ "129ad21322dc33d4c9daa1002b0d92ca5d8da22d84977c7d7970165a,PapayaTo
             , "cf91095d40729f784dcfe0ab63480f53f5762ea233120de7ad7da0b8,MangoToken,999164"
             ]
 
+minUtxoLovelace = 1700000 :: Int
+batchLimit = 300 :: Int
+targetFileName = "batched-tx.sh"
