@@ -90,8 +90,7 @@ To run, execute
 run-api-batcher.sh {endpoint}
 ```
 
-For demo purpose a REST server has been provided at this repo:
-`https://github.com/lambdacc/cli-batch-gen-rest-interface`
+For demo purpose a REST server has been provided at this [repo](https://github.com/lambdacc/cli-batch-gen-rest-interface).
 
 This gives a REST API running on a spring boot server. This server has a set of data stored in an in memory database. The API provides a paginated response of records that need to be batched. Pagination allows for choosing the batch size that the end user wants to batch in one transaction. This batch size is limited primarily by max block size set by the Cardano network and also the transaction size depending on the length of asset names. The endpoint exposed is 
 `http://127.0.0.1:8066/api/cli-batch-tx/get-data-file?pageNo=0&pageSize=100`
