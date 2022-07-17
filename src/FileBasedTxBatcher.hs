@@ -50,7 +50,7 @@ parseFile f =
     return $ lines fileContent
 
 beforeTxInSegment :: String
-beforeTxInSegment = "cardano-cli transaction build \\\n--alonzo-era \\\n" ++ networkPart ++ " \\\n"
+beforeTxInSegment = "cardano-cli transaction build \\\n--babbage-era \\\n" ++ networkPart ++ " \\\n"
 
 txInSegment :: String -> String
 txInSegment txIn = "--tx-in " ++ txIn ++ " \\\n" --txHash0#$txIx0
