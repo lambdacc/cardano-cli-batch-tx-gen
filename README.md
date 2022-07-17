@@ -51,7 +51,7 @@ You need to set the following values in `/src/Properties.hs`
 - `txInList`: The tx in should contain tx-ins of all native tokens at the storage address and tx-in for sufficient ADA
 - `assetInfo` : This is the comma separated list of policy id, asset name and total quantity at the storage address. 
 
-Place the signing key for the address holding your tokens under `/resources` directory
+Place the signing key for the address holding your tokens under `/runtime` directory
 
 
 #### 3. Build the executables
